@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Manage JSON Data</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        /* Custom green theme */
+
+        .green-theme .btn-success {
+            background-color: #218838; /* Darker green for buttons */
+            border-color: #1e7e34;
+        }
+        .green-theme .btn-success:hover {
+            background-color: #1e7e34;
+            border-color: #1c7430;
+        }
+    </style>
+</head>
+<body>
+
+
+    <body class="green-theme">
+        <div class="container mt-5">
+            <h1 class="text-center mb-4">Manage JSON Data</h1>
+            <ul id="data-list" class="list-group mb-4"></ul>
+    
+            <h2 class="mb-3">Add New Entry</h2>
+            <form id="add-form" class="mb-4">
+                <div class="mb-3">
+                    <label for="id" class="form-label">ID:</label>
+                    <input type="number" id="id" name="id" class="form-control" required>
+                </div>
+                <div class="mb-3">
+                    <label for="name" class="form-label">Name:</label>
+                    <input type="text" id="name" name="name" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success">Add</button>
+            </form>
+    
+            <h2 class="mb-3">Delete Entry</h2>
+            <form id="delete-form" class="mb-4">
+                <div class="mb-3">
+                    <label for="delete-id" class="form-label">ID to Delete:</label>
+                    <input type="number" id="delete-id" name="delete-id" class="form-control" required>
+                </div>
+                <button type="submit" class="btn btn-success">Delete</button>
+            </form>
+        </div>
+
+    <script>
+        async function fetchData() {
+            try {
+                const response = await fetch('http://localhost:3000/data');
+                if (!response.ok) {
+                    throw new Error('Failed to fetch data');
+                }
+                const data = await response.json();
+                const dataList = document.getElementById('data-list');
+                dataList.innerHTML = data.map(item => `<li>ID: ${item.id}, Name: ${item.name}</li>`).join('');
+            } catch (error) {
+                console.error('Error fetching data:', error);
+            }
+        }
+
+        document.getElementById('add-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('id').value;
+            const name = document.getElementById('name').value;
+
+            try {
+                const response = await fetch('http://localhost:3000/add', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: parseInt(id), name })
+                });
+                if (!response.ok) {
+                    throw new Error('Failed to add data');
+                }
+                fetchData();
+            } catch (error) {
+                console.error('Error adding data:', error);
+            }
+        });
+
+        document.getElementById('delete-form').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const id = document.getElementById('delete-id').value;
+
+            try {
+                const response = await fetch(`http://localhost:3000/delete/${id}`, { method: 'DELETE' });
+                if (!response.ok) {
+                    throw new Error('Failed to delete data');
+                }
+                fetchData(); 
+            } catch (error) {
+                console.error('Error deleting data:', error);
+            }
+        });
+
+        fetchData();
+    </script>
+</body>
+</html>
